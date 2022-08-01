@@ -11,14 +11,14 @@ func (err InvalidInputError) Error() string {
 	return fmt.Sprintf("input invalid in current state.  (State: %v, Input: %v)", err.state, err.input)
 }
 
-type StateNotInitializedError struct{}
+// type StateNotInitializedError struct{}
 
-func (err StateNotInitializedError) Error() string {
-	return "FSM not initialized."
-}
+// func (err StateNotInitializedError) Error() string {
+// 	return "FSM not initialized."
+// }
 
-type ImpossibleStateError State
+// type ImpossibleStateError State
 
-func (err ImpossibleStateError) Error() string {
-	return fmt.Sprintf("FSM in impossible state.  (State: %d)", err)
-}
+// func (err ImpossibleStateError) Error() string {
+// 	return fmt.Sprintf("FSM in impossible state.  (State: %d)", err.String())
+// }
