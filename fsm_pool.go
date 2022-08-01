@@ -9,6 +9,9 @@ type FSMPool struct {
 	transitionTable TransitionTable
 }
 
+// This is a pool wrapper.
+// We need to initialize FSM pool with a transition table.
+// Every FSM from this pool will share the same transition table.
 func NewFSMPool(transitionTable TransitionTable) *FSMPool {
 	fsmPool := &FSMPool{
 		pool: &sync.Pool{
@@ -27,10 +30,12 @@ func NewFSMPool(transitionTable TransitionTable) *FSMPool {
 	return fsmPool
 }
 
+// Put the FSM back to pool for next time we use it.
 func (fsmPool *FSMPool) Put(fsm *FSM) {
 	fsmPool.pool.Put(fsm)
 }
 
+// Get a FSM from pool and mark it as uninitialized.
 func (fsmPool *FSMPool) Get() *FSM {
 	// Get from pool and do type assertion
 	fsm := fsmPool.pool.Get().(*FSM)

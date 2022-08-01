@@ -11,6 +11,8 @@ type Output struct {
 	action    Action
 }
 
+// A transition table indicates that what next state will be
+// and action will take for each input of each current state.
 type TransitionTable map[State]map[Input]Output
 
 type FSM struct {
