@@ -69,7 +69,7 @@ func main() {
 
 	var waitGroup sync.WaitGroup
 
-	for i := 0; i < 2000; i++ {
+	for i := 0; i < 200; i++ {
 		time.Sleep(time.Millisecond * time.Duration(rand.Int63n(50)))
 
 		waitGroup.Add(1)
