@@ -4,17 +4,20 @@ import (
 	"sync"
 )
 
+// `Count` indicates that how many fsm are in use.
 type FSMPool struct {
 	pool            *sync.Pool
 	transitionTable TransitionTable
+	count           atomicInt
 }
 
 // simple counter for benchmark
-// type atomInt struct {
-// 	sync.Mutex
-// 	value int
-// }
-// var counter = aint{value: 0}
+type atomicInt struct {
+	sync.Mutex
+	value uint
+}
+
+// var counter = atomicInt{value: 0}
 
 // This is a pool wrapper.
 // We need to initialize FSM pool with a transition table.
@@ -39,6 +42,7 @@ func NewFSMPool(transitionTable TransitionTable) *FSMPool {
 			},
 		},
 		transitionTable: transitionTable,
+		count:           atomicInt{value: 0},
 	}
 
 	return fsmPool
@@ -47,6 +51,10 @@ func NewFSMPool(transitionTable TransitionTable) *FSMPool {
 // Put the FSM back to pool for next time we use it.
 func (fsmPool *FSMPool) Put(fsm *FSM) {
 	fsmPool.pool.Put(fsm)
+
+	fsmPool.count.Lock()
+	fsmPool.count.value--
+	fsmPool.count.Unlock()
 }
 
 // Get a FSM from pool and mark it as uninitialized.
@@ -58,6 +66,14 @@ func (fsmPool *FSMPool) Get() *FSM {
 	// The User must initialize current state of the FSM that are getting from the pool.
 	fsm.initialized = false
 
+	fsmPool.count.Lock()
+	fsmPool.count.value++
+	fsmPool.count.Unlock()
+
 	// fmt.Println("Get a FSM from pool.")
 	return fsm
+}
+
+func (fsmPool *FSMPool) Count() uint {
+	return fsmPool.count.value
 }

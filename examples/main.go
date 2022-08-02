@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"sync"
+	"time"
 
 	"github.com/fochive00/fsm"
 )
@@ -64,23 +67,31 @@ func main() {
 
 	fsmPool := fsm.NewFSMPool(transitionTable)
 
-	for i := 0; i < 1000; i++ {
-		// time.Sleep(time.Millisecond * 50)
-		go func() {
+	var waitGroup sync.WaitGroup
+
+	for i := 0; i < 2000; i++ {
+		time.Sleep(time.Millisecond * time.Duration(rand.Int63n(50)))
+
+		waitGroup.Add(1)
+
+		go func(waitGroup *sync.WaitGroup, id int) {
+			defer waitGroup.Done()
+
 			fsm1 := fsmPool.Get()
 			fsm1.InitState(idle)
+
 			err := fsm1.Spin(move)
 
 			if err != nil {
 				log.Panic(err)
 			}
 
-			// time.Sleep(time.Millisecond * 20)
+			time.Sleep(time.Millisecond * time.Duration(rand.Int63n(200)))
 			fsmPool.Put(fsm1)
-			// fmt.Println(fsm1.GetState())
-		}()
+		}(&waitGroup, i)
+
+		fmt.Println(fsmPool.Count())
 	}
 
-	for i := 0; i == 0; {
-	}
+	waitGroup.Wait()
 }
