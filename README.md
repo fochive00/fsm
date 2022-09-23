@@ -3,12 +3,14 @@
 - Inspired by [fsm by rynorris](https://github.com/rynorris/fsm)
 - This project is under development
 
-# Features
-- Basic FSM
-- FSMPool reuse FSM
+# Design Patterns
+ - FlyWeight
+ - Factory
+ - Builder
+ - Object Pool
 
 # TODO
+ - Experiment with more design patterns
  - More documents
- - Better interface
  - Unit testing
  - Performance optimization

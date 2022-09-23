@@ -12,9 +12,6 @@ type Input interface {
 	String() string
 }
 
-type State interface {
-	String() string
-}
 type Action func() Input
 
 type Output struct {
