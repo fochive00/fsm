@@ -1,97 +1,72 @@
 package main
 
-// import (
-// 	"fmt"
-// 	"log"
-// 	"math/rand"
-// 	"sync"
-// 	"time"
+import (
+	"fmt"
+	"log"
+	"math/rand"
+	"sync"
+	"time"
 
-// 	"github.com/fochive00/fsm"
-// )
+	"github.com/fochive00/fsm"
+)
 
-// type State int
-// type Input int
+var transitionTable = fsm.TransitionTable{
+	idle: map[fsm.Input]fsm.Output{
+		stop:       {NextState: idle, Action: nil},
+		move:       {NextState: moving, Action: nil},
+		attack:     {NextState: attacking, Action: nil},
+		takeDamage: {NextState: dead, Action: nil},
+	},
+	moving: map[fsm.Input]fsm.Output{
+		stop:       {NextState: idle, Action: nil},
+		move:       {NextState: moving, Action: nil},
+		attack:     {NextState: attacking, Action: nil},
+		takeDamage: {NextState: dead, Action: nil},
+	},
+	attacking: map[fsm.Input]fsm.Output{
+		stop:       {NextState: idle, Action: nil},
+		move:       {NextState: moving, Action: nil},
+		attack:     {NextState: attacking, Action: nil},
+		takeDamage: {NextState: dead, Action: nil},
+	},
+	dead: map[fsm.Input]fsm.Output{
+		stop:       {NextState: dead, Action: nil},
+		move:       {NextState: dead, Action: nil},
+		attack:     {NextState: dead, Action: nil},
+		takeDamage: {NextState: dead, Action: nil},
+	},
+}
 
-// func (s State) String() string {
-// 	return fmt.Sprintf("%d", s)
-// }
+// TODO
+func main() {
 
-// func (i Input) String() string {
-// 	return fmt.Sprintf("%d", i)
-// }
+	fsmPool := fsm.NewFSMPool(transitionTable)
 
-// const (
-// 	idle State = iota
-// 	moving
-// 	attacking
-// 	dead
-// )
+	var waitGroup sync.WaitGroup
 
-// const (
-// 	stop Input = iota
-// 	move
-// 	attack
-// 	takeDamage
-// )
+	for i := 0; i < 200; i++ {
+		time.Sleep(time.Millisecond * time.Duration(rand.Int63n(50)))
 
-// var transitionTable = fsm.TransitionTable{
-// 	idle: map[fsm.Input]fsm.Output{
-// 		stop:       {NextState: idle, Action: nil},
-// 		move:       {NextState: moving, Action: nil},
-// 		attack:     {NextState: attacking, Action: nil},
-// 		takeDamage: {NextState: dead, Action: nil},
-// 	},
-// 	moving: map[fsm.Input]fsm.Output{
-// 		stop:       {NextState: idle, Action: nil},
-// 		move:       {NextState: moving, Action: nil},
-// 		attack:     {NextState: attacking, Action: nil},
-// 		takeDamage: {NextState: dead, Action: nil},
-// 	},
-// 	attacking: map[fsm.Input]fsm.Output{
-// 		stop:       {NextState: idle, Action: nil},
-// 		move:       {NextState: moving, Action: nil},
-// 		attack:     {NextState: attacking, Action: nil},
-// 		takeDamage: {NextState: dead, Action: nil},
-// 	},
-// 	dead: map[fsm.Input]fsm.Output{
-// 		stop:       {NextState: dead, Action: nil},
-// 		move:       {NextState: dead, Action: nil},
-// 		attack:     {NextState: dead, Action: nil},
-// 		takeDamage: {NextState: dead, Action: nil},
-// 	},
-// }
+		waitGroup.Add(1)
 
-// // TODO
-// func main() {
+		go func(waitGroup *sync.WaitGroup, id int) {
+			defer waitGroup.Done()
 
-// 	fsmPool := fsm.NewFSMPool(transitionTable)
+			fsm1 := fsmPool.Get()
+			fsm1.InitState(idle)
 
-// 	var waitGroup sync.WaitGroup
+			err := fsm1.Spin(move)
 
-// 	for i := 0; i < 200; i++ {
-// 		time.Sleep(time.Millisecond * time.Duration(rand.Int63n(50)))
+			if err != nil {
+				log.Panic(err)
+			}
 
-// 		waitGroup.Add(1)
+			time.Sleep(time.Millisecond * time.Duration(rand.Int63n(200)))
+			fsmPool.Put(fsm1)
+		}(&waitGroup, i)
 
-// 		go func(waitGroup *sync.WaitGroup, id int) {
-// 			defer waitGroup.Done()
+		fmt.Println(fsmPool.Count())
+	}
 
-// 			fsm1 := fsmPool.Get()
-// 			fsm1.InitState(idle)
-
-// 			err := fsm1.Spin(move)
-
-// 			if err != nil {
-// 				log.Panic(err)
-// 			}
-
-// 			time.Sleep(time.Millisecond * time.Duration(rand.Int63n(200)))
-// 			fsmPool.Put(fsm1)
-// 		}(&waitGroup, i)
-
-// 		fmt.Println(fsmPool.Count())
-// 	}
-
-// 	waitGroup.Wait()
-// }
+	waitGroup.Wait()
+}

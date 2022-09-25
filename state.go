@@ -14,7 +14,8 @@ type StateID string
 
 // FlyWeight
 type State interface {
-	Handle(event Event)
+	StateID() StateID
+	HandlerFactory() HandlerFactory
 }
 
 // FlyWeight Factory
